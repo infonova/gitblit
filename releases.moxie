@@ -1,10 +1,10 @@
 #
-# ${project.version} release
+# 1.8.0-INFONOVA-1 release
 #
 r30: {
-    title: ${project.name} ${project.version} released
-    id: ${project.version}
-    date: ${project.buildDate}
+    title: Gitblit 1.8.0-INFONOVA-1 released
+    id: 1.8.0-INFONOVA-1
+    date: 2017-06-29
     note: This is a Infonova internal release based on 1.8.0 with a fix for a tedious stack overflow bug
     html: ~
     text: ~
@@ -1853,6 +1853,6 @@ r1: {
 	- James Moger
 }
 
-snapshot: &r30
-release: &r29
-releases: &r[1..29]
+snapshot: ~
+release: &r30
+releases: &r[1..30]
