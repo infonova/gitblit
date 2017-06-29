@@ -30,3 +30,6 @@ tags
 /**/init.lua
 /**/session
 /nbproject/private
+*.iml
+*.classpath
+/target
