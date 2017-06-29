@@ -5,15 +5,18 @@ r30: {
     title: ${project.name} ${project.version} released
     id: ${project.version}
     date: ${project.buildDate}
-    note: ~
+    note: This is a Infonova internal release based on 1.8.0 with a fix for a tedious stack overflow bug
     html: ~
     text: ~
     security: ~
-    fixes: ~
-    changes: ~
+    fixes:
+    - Resolve StackOverflowErrors on page serialization (pr-1141)
+    changes:
+    - Update build vars for Infonova GitHub
     additions: ~
     dependencyChanges: ~
-    contributors: ~
+    contributors:
+    - tomaswolf
 }
 
 #
