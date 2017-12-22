@@ -1306,6 +1306,11 @@ public class GitblitManager implements IGitblit {
 	@Override
 	public long getFilestoreAvailableByteCount() {
 		return filestoreManager.getFilestoreAvailableByteCount();
+	}
+
+	@Override
+	public boolean isFilestoreActivated() {
+		return filestoreManager.isFilestoreActivated();
 	};
 	
 	/*

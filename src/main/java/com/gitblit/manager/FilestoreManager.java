@@ -92,6 +92,7 @@ public class FilestoreManager implements IFilestoreManager {
 
 	private Map<String, FilestoreModel > fileCache = new ConcurrentHashMap<String, FilestoreModel>();
 
+	private final long maxUploadSize;
 
 	@Inject
 	FilestoreManager(
@@ -100,38 +101,42 @@ public class FilestoreManager implements IFilestoreManager {
 		this.runtimeManager = runtimeManager;
 		this.repositoryManager = repositoryManager;
 		this.settings = runtimeManager.getSettings();
+
+		this.maxUploadSize = settings.getLong(Keys.filestore.maxUploadSize, -1);
 	}
 
 	@Override
 	public IManager start() {
 
-		// Try to load any existing metadata
-		File dir = getStorageFolder();
-		dir.mkdirs();
-		File metadata = new File(dir, METAFILE);
+		if(isFilestoreActivated()) {
+			// Try to load any existing metadata
+			File dir = getStorageFolder();
+			dir.mkdirs();
+			File metadata = new File(dir, METAFILE);
 
-		if (metadata.exists()) {
-			Collection<FilestoreModel> items = null;
+			if (metadata.exists()) {
+				Collection<FilestoreModel> items = null;
 
-			Gson gson = gson();
-			try (FileReader file = new FileReader(metadata)) {
-				items = gson.fromJson(file, METAFILE_TYPE);
-				file.close();
+				Gson gson = gson();
+				try (FileReader file = new FileReader(metadata)) {
+					items = gson.fromJson(file, METAFILE_TYPE);
+					file.close();
 
-			} catch (IOException e) {
-				e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				for (Iterator<FilestoreModel> itr = items.iterator(); itr.hasNext(); ) {
+					FilestoreModel model = itr.next();
+					fileCache.put(model.oid, model);
+				}
+
+				logger.info("Loaded {} items from filestore metadata file", fileCache.size());
+			} else {
+				logger.info("No filestore metadata file found");
 			}
-
-			for(Iterator<FilestoreModel> itr = items.iterator(); itr.hasNext(); ) {
-			    FilestoreModel model = itr.next();
-			    fileCache.put(model.oid, model);
-			}
-
-			logger.info("Loaded {} items from filestore metadata file", fileCache.size());
-		}
-		else
-		{
-			logger.info("No filestore metadata file found");
+		} else {
+			logger.info("FilestoreManager is deactivated");
 		}
 
 		return this;
@@ -350,7 +355,7 @@ public class FilestoreManager implements IFilestoreManager {
 			}
 		}
 		
-		return userViewableFiles;				
+		return userViewableFiles;
 	}
 
 	@Override
@@ -365,7 +370,7 @@ public class FilestoreManager implements IFilestoreManager {
 
 	@Override
 	public long getMaxUploadSize() {
-		return settings.getLong(Keys.filestore.maxUploadSize, -1);
+		return maxUploadSize;
 	}
 
 	@Override
@@ -394,6 +399,17 @@ public class FilestoreManager implements IFilestoreManager {
 		}
 
 		return UNDEFINED_SIZE;
+	}
+
+	/**
+	 * Returns if the FilestoreManager is activated or not.
+	 * The evaluation is done by checking if @getMaxUploadSize() returns a value bigger than zero.
+	 *
+	 * @return If the Manager is activated or not.
+	 */
+	@Override
+	public boolean isFilestoreActivated() {
+		return getMaxUploadSize() != 0;
 	};
 
 	private synchronized void saveFilestoreModel(FilestoreModel model) {
@@ -462,5 +478,4 @@ public class FilestoreManager implements IFilestoreManager {
 		}
 		return builder.create();
 	}
-
 }

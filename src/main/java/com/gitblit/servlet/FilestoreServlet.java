@@ -94,7 +94,12 @@ public class FilestoreServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, 
 			HttpServletResponse response) throws ServletException ,IOException {
-		
+
+		if(!gitblit.isFilestoreActivated()) {
+			sendError(response, HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+
 		UrlInfo info = getInfoFromRequest(request);
 		if (info == null) {
 			sendError(response, HttpServletResponse.SC_NOT_FOUND);
@@ -151,7 +156,12 @@ public class FilestoreServlet extends HttpServlet {
 	@Override
 	protected void doPut(HttpServletRequest request, 
 			HttpServletResponse response) throws ServletException ,IOException {
-		
+
+		if(!gitblit.isFilestoreActivated()) {
+			sendError(response, HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+
 		UrlInfo info = getInfoFromRequest(request);
 		
 		if (info == null) {
@@ -195,7 +205,12 @@ public class FilestoreServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, 
 			HttpServletResponse response) throws ServletException ,IOException {
-		
+
+		if(!gitblit.isFilestoreActivated()) {
+			sendError(response, HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+
 		UrlInfo info = getInfoFromRequest(request);
 		
 		if (info == null || info.oid == null) {
