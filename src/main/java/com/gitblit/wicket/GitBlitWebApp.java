@@ -248,7 +248,9 @@ public class GitBlitWebApp extends WebApplication implements GitblitWicketApp {
 		mount("/fork", ForkPage.class, "r");
 		
 		// filestore URL
-		mount("/filestore", FilestorePage.class);
+		if(filestoreManager.isFilestoreActivated()) {
+			mount("/filestore", FilestorePage.class);
+		}
 
 		// allow started Wicket plugins to initialize
 		for (PluginWrapper pluginWrapper : pluginManager.getPlugins()) {

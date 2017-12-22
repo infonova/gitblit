@@ -51,4 +51,6 @@ public interface IFilestoreManager extends IManager {
 	
 	long getFilestoreAvailableByteCount();
 
+	boolean isFilestoreActivated();
+
 }
