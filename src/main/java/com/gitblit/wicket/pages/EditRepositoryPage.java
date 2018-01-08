@@ -667,10 +667,9 @@ public class EditRepositoryPage extends RootSubPage {
 		cancel.setDefaultFormProcessing(false);
 		form.add(cancel);
 
-		// the user can delete if deletions are allowed AND the user is an admin or the personal owner
-		// assigned ownership is not sufficient to allow deletion
+		// the user can delete if deletions are allowed AND the user is an admin or the (personal) owner
 		boolean canDelete = !isCreate && app().repositories().canDelete(repositoryModel)
-				&& (user.canAdmin() || user.isMyPersonalRepository(repositoryModel.name));
+				&& (user.canAdmin() || user.isMyPersonalRepository(repositoryModel.name) || repositoryModel.isOwner(user.username));
 
 		Link<Void> delete = new Link<Void>("delete") {
 
