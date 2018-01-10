@@ -311,7 +311,7 @@ public abstract class RepositoryPage extends RootPage {
 				} else {
 					add(new Fragment("repoIcon", "cloneIconFragment", this));
 				}
-				add(new Label("originRepository", Optional.of(model.description).or("")));
+				add(new Label("originRepository", Optional.fromNullable(model.description).or("")));
 			}
 		} else {
 			RepositoryModel origin = app().repositories().getRepositoryModel(model.originRepository);
@@ -322,7 +322,7 @@ public abstract class RepositoryPage extends RootPage {
 				} else {
 					add(new Fragment("repoIcon", "cloneIconFragment", this));
 				}
-				add(new Label("originRepository", Optional.of(model.description).or("")));
+				add(new Label("originRepository", Optional.fromNullable(model.description).or("")));
 			} else if (!user.canView(origin)) {
 				// show origin repository without link
 				add(new Fragment("repoIcon", "forkIconFragment", this));
