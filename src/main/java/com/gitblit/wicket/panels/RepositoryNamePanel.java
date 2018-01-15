@@ -69,7 +69,7 @@ public class RepositoryNamePanel extends BasePanel {
 		for (ProjectModel project : app().projects().getProjectModels(user, false)) {
 			// TODO issue-351: user.canAdmin(project)
 			if(user.canManage(project)) {
-				if (project.isRoot ) {
+				if (project.isRoot) {
 					pathNames.add("/");
 				} else {
 					pathNames.add(project.name + "/");

@@ -399,7 +399,7 @@ public abstract class RepositoryPage extends RootPage {
 			}
 		}
 
-		if (showAdmin || isOwner) {
+		if (showAdmin || isOwner || user.canManage(project)) {
 			String url = getRequestCycle().urlFor(EditRepositoryPage.class, WicketUtils.newRepositoryParameter(model.name)).toString();
 			add(new ExternalLink("editLink", url));
 		} else {
