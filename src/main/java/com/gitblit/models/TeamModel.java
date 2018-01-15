@@ -345,6 +345,10 @@ public class TeamModel implements Serializable, Comparable<TeamModel> {
 	}
 
     public boolean canManage(ProjectModel projectModel) {
+		if (projectModel == null) {
+			return false;
+		}
+
 		if(canAdmin) {
 			return true;
 		}

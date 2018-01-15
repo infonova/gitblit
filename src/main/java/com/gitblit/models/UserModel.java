@@ -37,6 +37,7 @@ import com.gitblit.Constants.RegistrantType;
 import com.gitblit.utils.ArrayUtils;
 import com.gitblit.utils.ModelUtils;
 import com.gitblit.utils.StringUtils;
+import com.gitblit.wicket.GitBlitWebApp;
 
 /**
  * UserModel is a serializable model class that represents a user and the user's
@@ -448,6 +449,10 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 	}
 
 	public boolean canManage(ProjectModel projectModel) {
+		if (projectModel == null) {
+			return false;
+		}
+
 		if(canAdmin()) {
 			return true;
 		}
@@ -586,7 +591,10 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 	 * @return true if the user can administer the repository
 	 */
 	public boolean canAdmin(RepositoryModel repo) {
-		return canAdmin() || repo.isOwner(username) || isMyPersonalRepository(repo.name);
+
+		ProjectModel projectModel = GitBlitWebApp.get().projects().getProjectModel(repo.projectPath);
+
+		return canAdmin() || repo.isOwner(username) || isMyPersonalRepository(repo.name) || canManage(projectModel);
 	}
 
 	public boolean isAuthenticated() {

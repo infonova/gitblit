@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.gitblit.models.*;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormChoiceComponentUpdatingBehavior;
@@ -59,10 +60,6 @@ import com.gitblit.Constants.FederationStrategy;
 import com.gitblit.Constants.RegistrantType;
 import com.gitblit.GitBlitException;
 import com.gitblit.Keys;
-import com.gitblit.models.RegistrantAccessPermission;
-import com.gitblit.models.RepositoryModel;
-import com.gitblit.models.UserChoice;
-import com.gitblit.models.UserModel;
 import com.gitblit.utils.ArrayUtils;
 import com.gitblit.utils.StringUtils;
 import com.gitblit.wicket.GitBlitWebSession;
@@ -88,6 +85,8 @@ public class EditRepositoryPage extends RootSubPage {
 	private boolean isAdmin;
 
 	RepositoryModel repositoryModel;
+
+	ProjectModel projectModel;
 
 	private IModel<String> metricAuthorExclusions;
 
@@ -143,6 +142,7 @@ public class EditRepositoryPage extends RootSubPage {
 
 	protected void setupPage(RepositoryModel model) {
 		this.repositoryModel = model;
+		this.projectModel = app().projects().getProjectModel(repositoryModel.projectPath);
 
 		// ensure this user can create or edit this repository
 		checkPermissions(repositoryModel);
@@ -156,7 +156,8 @@ public class EditRepositoryPage extends RootSubPage {
 
 		GitBlitWebSession session = GitBlitWebSession.get();
 		final UserModel user = session.getUser() == null ? UserModel.ANONYMOUS : session.getUser();
-		final boolean allowEditName = isCreate || isAdmin || repositoryModel.isUsersPersonalRepository(user.username);
+		final boolean allowEditName = isCreate || isAdmin || repositoryModel.isUsersPersonalRepository(user.username)
+				|| repositoryModel.isOwner(user.username) || user.canManage(projectModel);
 
 		if (isCreate) {
 			if (user.canAdmin()) {
@@ -743,9 +744,9 @@ public class EditRepositoryPage extends RootSubPage {
 						isAdmin = true;
 						return;
 					} else {
-						if (!model.isOwner(user.username)) {
+						if (!(user.canManage(projectModel) || model.isOwner(user.username))) {
 							// User is not an Admin nor Owner
-							error(getString("gb.errorOnlyAdminOrOwnerMayEditRepository"), true);
+							error(getString("gb.errorOnlyAdminOrOwnerOrProjectManagerMayEditRepository"), true);
 						}
 					}
 				}
