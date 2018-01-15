@@ -95,7 +95,15 @@ public class RegistrantPermissionsPanel extends JPanel {
 
 		registrantModel = new DefaultComboBoxModel();
 		registrantSelector = new JComboBox(registrantModel);
-		permissionSelector = new JComboBox(AccessPermission.NEWPERMISSIONS);
+
+		AccessPermission[] accessPermissions = null;
+		if (registrantType == RegistrantType.REPOSITORY) {
+			accessPermissions = AccessPermission.NEWREPOSIOTYPERMISSIONS;
+		} else {
+			accessPermissions = AccessPermission.NEWPERMISSIONS;
+		}
+		permissionSelector = new JComboBox(accessPermissions);
+
 		addButton = new JButton(Translation.get("gb.add"));
 		addButton.addActionListener(new ActionListener() {
 			@Override

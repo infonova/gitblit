@@ -95,7 +95,7 @@ dependencyDirectory: ext
 registeredRepositories:
 - { id: eclipse, url: 'http://repo.eclipse.org/content/groups/releases' }
 - { id: eclipse-snapshots, url: 'http://repo.eclipse.org/content/groups/snapshots' }
-- { id: gitblit, url: 'http://grzmvn01.infonova.at:8082/nexus/content/repositories/anon-access-repo' }
+- { id: gitblit, url: 'http://grzmvn01.infonova.at:8082/nexus/content/groups/anon-access/' }
 
 # Source all dependencies from the following repositories in the specified order
 repositories: central, eclipse-snapshots, eclipse, gitblit

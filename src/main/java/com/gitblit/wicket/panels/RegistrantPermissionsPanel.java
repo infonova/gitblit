@@ -247,8 +247,15 @@ public class RegistrantPermissionsPanel extends BasePanel {
 		IModel<RegistrantAccessPermission> addPermissionModel = new CompoundPropertyModel<RegistrantAccessPermission>(new RegistrantAccessPermission(registrantType));
 		Form<RegistrantAccessPermission> addPermissionForm = new Form<RegistrantAccessPermission>("addPermissionForm", addPermissionModel);
 		addPermissionForm.add(new DropDownChoice<String>("registrant", registrants));
+
+		AccessPermission[] accessPermissions = null;
+		if(registrantType == RegistrantType.REPOSITORY) {
+			accessPermissions = AccessPermission.NEWREPOSIOTYPERMISSIONS;
+		} else {
+			accessPermissions = AccessPermission.NEWPERMISSIONS;
+		}
 		addPermissionForm.add(new DropDownChoice<AccessPermission>("permission", Arrays
-				.asList(AccessPermission.NEWPERMISSIONS), new AccessPermissionRenderer(translations)));
+				.asList(accessPermissions), new AccessPermissionRenderer(translations)));
 		AjaxButton button = new AjaxButton("addPermissionButton", addPermissionForm) {
 
 			private static final long serialVersionUID = 1L;

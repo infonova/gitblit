@@ -447,6 +447,32 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 		return canAdmin() || model.isUsersPersonalRepository(username) || model.isOwner(username);
 	}
 
+	public boolean canManage(ProjectModel projectModel) {
+		if(canAdmin()) {
+			return true;
+		}
+
+		String projectName = "/";
+		if(!projectModel.isRoot) {
+			projectName = projectModel.name + "/";
+		}
+
+		for(String key : permissions.keySet()) {
+			if(permissions.get(key) == AccessPermission.MANAGE_PROJECT
+					&& projectName.matches(key)) {
+				return true;
+			}
+		}
+
+		for(TeamModel teamModel : teams) {
+			if(teamModel.canManage(projectModel)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public boolean canEdit(TicketModel ticket, RepositoryModel repository) {
 		 return isAuthenticated() &&
 				 (canPush(repository)
