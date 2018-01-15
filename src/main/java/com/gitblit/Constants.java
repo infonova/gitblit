@@ -494,9 +494,10 @@ public class Constants {
 	 * The access permissions available for a repository.
 	 */
 	public static enum AccessPermission {
-		NONE("N"), EXCLUDE("X"), VIEW("V"), CLONE("R"), PUSH("RW"), CREATE("RWC"), DELETE("RWD"), REWIND("RW+"), OWNER("RW+");
+		NONE("N"), EXCLUDE("X"), VIEW("V"), CLONE("R"), PUSH("RW"), CREATE("RWC"), DELETE("RWD"), REWIND("RW+"), OWNER("RW+"), MANAGE_PROJECT("PROJ");
 
 		public static final AccessPermission [] NEWPERMISSIONS = { EXCLUDE, VIEW, CLONE, PUSH, CREATE, DELETE, REWIND };
+		public static final AccessPermission [] NEWREPOSIOTYPERMISSIONS = { EXCLUDE, VIEW, CLONE, PUSH, CREATE, DELETE, REWIND, MANAGE_PROJECT };
 
 		public static final AccessPermission [] SSHPERMISSIONS = { VIEW, CLONE, PUSH };
 
