@@ -20,10 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +35,7 @@ import com.gitblit.models.UserModel;
 import com.gitblit.service.LdapSyncService;
 import com.gitblit.utils.ArrayUtils;
 import com.gitblit.utils.StringUtils;
+import com.unboundid.asn1.ASN1OctetString;
 import com.unboundid.ldap.sdk.Attribute;
 import com.unboundid.ldap.sdk.DereferencePolicy;
 import com.unboundid.ldap.sdk.ExtendedResult;
@@ -50,7 +48,9 @@ import com.unboundid.ldap.sdk.SearchResult;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
 import com.unboundid.ldap.sdk.SimpleBindRequest;
+import com.unboundid.ldap.sdk.controls.SimplePagedResultsControl;
 import com.unboundid.ldap.sdk.extensions.StartTLSExtendedRequest;
+import com.unboundid.util.LDAPTestUtils;
 import com.unboundid.util.ssl.SSLUtil;
 import com.unboundid.util.ssl.TrustAllTrustManager;
 
@@ -60,6 +60,8 @@ import com.unboundid.util.ssl.TrustAllTrustManager;
  * @author John Crygier
  */
 public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
+
+	private final static int DEFAULT_SEARCH_PAGE_SIZE = 100;
 
 	private final ScheduledExecutorService scheduledExecutorService;
 
@@ -115,11 +117,11 @@ public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
 					String accountPattern = settings.getString(Keys.realm.ldap.accountPattern, "(&(objectClass=person)(sAMAccountName=${username}))");
 					accountPattern = StringUtils.replace(accountPattern, "${username}", "*");
 
-					SearchResult result = doSearch(ldapConnection, accountBase, accountPattern);
-					if (result != null && result.getEntryCount() > 0) {
+					List<SearchResultEntry> results = doSearch(ldapConnection, accountBase, accountPattern);
+					if (results != null && results.size() > 0) {
 						final Map<String, UserModel> ldapUsers = new HashMap<String, UserModel>();
 
-						for (SearchResultEntry loggingInUser : result.getSearchEntries()) {
+						for (SearchResultEntry loggingInUser : results) {
 							Attribute uid = loggingInUser.getAttribute(uidAttribute);
 							if (uid == null) {
 								logger.error("Can not synchronize with LDAP, missing \"{}\" attribute", uidAttribute);
@@ -343,9 +345,9 @@ public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
 				String accountPattern = settings.getString(Keys.realm.ldap.accountPattern, "(&(objectClass=person)(sAMAccountName=${username}))");
 				accountPattern = StringUtils.replace(accountPattern, "${username}", escapeLDAPSearchFilter(simpleUsername));
 
-				SearchResult result = doSearch(ldapConnection, accountBase, accountPattern);
-				if (result != null && result.getEntryCount() == 1) {
-					SearchResultEntry loggingInUser = result.getSearchEntries().get(0);
+				List<SearchResultEntry> results = doSearch(ldapConnection, accountBase, accountPattern);
+				if (results != null && results.size() == 1) {
+					SearchResultEntry loggingInUser = results.get(0);
 					String loggingInUserDN = loggingInUser.getDN();
 
 					if (alreadyAuthenticated || isAuthenticated(ldapConnection, loggingInUserDN, new String(password))) {
@@ -479,10 +481,9 @@ public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
 			groupMemberPattern = StringUtils.replace(groupMemberPattern, "${" + userAttribute.getName() + "}", escapeLDAPSearchFilter(userAttribute.getValue()));
 		}
 
-		SearchResult teamMembershipResult = doSearch(ldapConnection, groupBase, true, groupMemberPattern, Arrays.asList("cn"));
-		if (teamMembershipResult != null && teamMembershipResult.getEntryCount() > 0) {
-			for (int i = 0; i < teamMembershipResult.getEntryCount(); i++) {
-				SearchResultEntry teamEntry = teamMembershipResult.getSearchEntries().get(i);
+		List<SearchResultEntry> teamMembershipResults = doSearch(ldapConnection, groupBase, true, groupMemberPattern, Arrays.asList("cn"));
+		if (teamMembershipResults != null && teamMembershipResults.size() > 0) {
+			for (SearchResultEntry teamEntry : teamMembershipResults) {
 				String teamName = teamEntry.getAttribute("cn").getValue();
 
 				TeamModel teamModel = userManager.getTeamModel(teamName);
@@ -501,10 +502,9 @@ public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
 		String groupBase = settings.getString(Keys.realm.ldap.groupBase, "");
 		String groupMemberPattern = settings.getString(Keys.realm.ldap.groupEmptyMemberPattern, "(&(objectClass=group)(!(member=*)))");
 
-		SearchResult teamMembershipResult = doSearch(ldapConnection, groupBase, true, groupMemberPattern, null);
-		if (teamMembershipResult != null && teamMembershipResult.getEntryCount() > 0) {
-			for (int i = 0; i < teamMembershipResult.getEntryCount(); i++) {
-				SearchResultEntry teamEntry = teamMembershipResult.getSearchEntries().get(i);
+		List<SearchResultEntry> teamMembershipResults = doSearch(ldapConnection, groupBase, true, groupMemberPattern, null);
+		if (teamMembershipResults != null && teamMembershipResults.size() > 0) {
+			for (SearchResultEntry teamEntry : teamMembershipResults) {
 				if (!teamEntry.hasAttribute("member")) {
 					String teamName = teamEntry.getAttribute("cn").getValue();
 
@@ -527,30 +527,43 @@ public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
 		return answer;
 	}
 
-	private SearchResult doSearch(LDAPConnection ldapConnection, String base, String filter) {
-		try {
-			return ldapConnection.search(base, SearchScope.SUB, filter);
-		} catch (LDAPSearchException e) {
-			logger.error("Problem Searching LDAP", e);
-
-			return null;
-		}
+	private List<SearchResultEntry> doSearch(LDAPConnection ldapConnection, String base, String filter) {
+		 return doSearch(ldapConnection, base, false, filter, null);
 	}
 
-	private SearchResult doSearch(LDAPConnection ldapConnection, String base, boolean dereferenceAliases, String filter, List<String> attributes) {
+	private  List<SearchResultEntry> doSearch(LDAPConnection ldapConnection, String base, boolean dereferenceAliases, String filter, List<String> attributes) {
 		try {
 			SearchRequest searchRequest = new SearchRequest(base, SearchScope.SUB, filter);
+
 			if (dereferenceAliases) {
 				searchRequest.setDerefPolicy(DereferencePolicy.SEARCHING);
 			}
 			if (attributes != null) {
 				searchRequest.setAttributes(attributes);
 			}
-			return ldapConnection.search(searchRequest);
+
+			List<SearchResultEntry> searchResultEntries = new LinkedList<SearchResultEntry>();
+			ASN1OctetString resumeCookie = null;
+			SimplePagedResultsControl responseControl;
+
+			do {
+				searchRequest.setControls(new SimplePagedResultsControl(getSearchPageSize(), resumeCookie));
+				SearchResult searchResult = ldapConnection.search(searchRequest);
+
+				searchResultEntries.addAll(searchResult.getSearchEntries());
+
+				LDAPTestUtils.assertHasControl(searchResult, SimplePagedResultsControl.PAGED_RESULTS_OID);
+				responseControl = SimplePagedResultsControl.get(searchResult);
+
+				// The resume cookie can be included in the simple paged results
+				// control included in the next search to get the next page of results.
+				resumeCookie = responseControl.getCookie();
+			} while (responseControl.moreResultsToReturn());
+
+			return searchResultEntries;
 
 		} catch (LDAPSearchException e) {
-			logger.error("Problem Searching LDAP", e);
-
+			logger.error("Problem searching LDAP", e);
 			return null;
 		} catch (LDAPException e) {
 			logger.error("Problem creating LDAP search", e);
@@ -625,4 +638,8 @@ public class LdapAuthProvider extends UsernamePasswordAuthenticationProvider {
 		}
 	}
 
+
+	private int getSearchPageSize() {
+		return settings.getInteger(Keys.realm.ldap.searchPageSize, DEFAULT_SEARCH_PAGE_SIZE);
+	}
 }
