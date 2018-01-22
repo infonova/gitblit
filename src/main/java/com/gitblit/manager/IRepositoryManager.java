@@ -480,4 +480,22 @@ public interface IRepositoryManager extends IManager {
  	 * @since 1.4.0
 	 */
 	boolean isIdle(Repository repository);
+
+	/**
+	 * Run JGit GC on every Repository where needed
+	 *
+	 * @since 1.9.0
+	 */
+	void collectGarbage();
+
+	/**
+	 * Run JGit GC on a given Repository
+	 *
+	 * @param repositoryname the name of the repository to run GC on
+	 * @param force if true, GC will be forced
+	 * @param async starts GC in background
+	 * @return if true, GC was successfully
+	 * @since 1.9.0
+	 */
+	boolean collectGarbage(String repositoryname, boolean force, boolean async);
 }

@@ -38,10 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -194,10 +191,16 @@ public class RepositoryManager implements IRepositoryManager {
 		Date date = null;
 		for (String name : getRepositoryList()) {
 			Repository r = getRepository(name);
-			Date lastChange = JGitUtils.getLastChange(r).when;
-			r.close();
-			if (lastChange != null && (date == null || lastChange.after(date))) {
-				date = lastChange;
+			if (r != null) {
+				try {
+					Date lastChange = JGitUtils.getLastChange(r).when;
+
+					if (lastChange != null && (date == null || lastChange.after(date))) {
+						date = lastChange;
+					}
+				} finally {
+					r.close();
+				}
 			}
 		}
 		return date;
@@ -1212,19 +1215,37 @@ public class RepositoryManager implements IRepositoryManager {
 	public boolean isIdle(Repository repository) {
 		try {
 			// Read the use count.
-			// An idle use count is 2:
-			// +1 for being in the cache
+			// An idle use count is 1:
 			// +1 for the repository parameter in this method
 			Field useCnt = Repository.class.getDeclaredField("useCnt");
 			useCnt.setAccessible(true);
 			int useCount = ((AtomicInteger) useCnt.get(repository)).get();
-			return useCount == 2;
+			return useCount <= 1;
 		} catch (Exception e) {
 			logger.warn(MessageFormat
 					.format("Failed to reflectively determine use count for repository {0}",
 							repository.getDirectory().getPath()), e);
 		}
 		return false;
+	}
+
+	public boolean collectGarbage(final String repositoryname, final boolean force, boolean async) {
+		if(async) {
+			Runnable singleGCRunnable = new Runnable() {
+				public void run() {
+					gcExecutor.collectGarbage(repositoryname, force);
+				}
+			};
+
+			scheduledExecutor.submit(singleGCRunnable);
+			return true;
+		} else {
+			return gcExecutor.collectGarbage(repositoryname, force);
+		}
+	}
+
+	public void collectGarbage(){
+		scheduledExecutor.submit(gcExecutor); //start immediately
 	}
 
 	/**

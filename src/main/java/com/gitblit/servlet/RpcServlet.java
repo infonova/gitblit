@@ -424,6 +424,20 @@ public class RpcServlet extends JsonServlet {
 			} else {
 				response.sendError(notAllowedCode);
 			}
+		} else if (RpcRequest.COLLECT_GARBAGE.equals(reqType)) {
+			if (allowManagement) {
+				if(StringUtils.isEmpty(objectName)) {
+					gitblit.collectGarbage();
+				} else{
+					// parseBoolean() returns false on null value
+					boolean force = Boolean.parseBoolean(request.getParameter("force"));
+					if (!gitblit.collectGarbage(objectName, force, false)) {
+						response.sendError(failureCode);
+					}
+				}
+			} else {
+				response.sendError(notAllowedCode);
+			}
 		}
 
 		// send the result of the request

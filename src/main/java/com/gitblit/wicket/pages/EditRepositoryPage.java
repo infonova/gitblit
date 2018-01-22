@@ -15,7 +15,9 @@
  */
 package com.gitblit.wicket.pages;
 
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.gitblit.manager.IGitblit;
 import com.gitblit.models.*;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -521,10 +524,28 @@ public class EditRepositoryPage extends RootSubPage {
 		// GARBAGE COLLECTION
 		//
 		boolean gcEnabled = app().settings().getBoolean(Keys.git.enableGarbageCollection, false);
+		boolean canGC = (user.canAdmin() || user.isMyPersonalRepository(repositoryModel.name) || repositoryModel.isOwner(user.username) || user.canManage(projectModel));
 		int defaultGcPeriod = app().settings().getInteger(Keys.git.defaultGarbageCollectionPeriod, 7);
 		if (repositoryModel.gcPeriod == 0) {
 			repositoryModel.gcPeriod = defaultGcPeriod;
 		}
+
+
+		boolean isCollectingGarbage = repositoryModel.isCollectingGarbage;
+
+		Model gcStatusModel;
+		if(isCollectingGarbage) {
+			gcStatusModel = Model.<String>of(getString("gb.gcIsRunning"));
+		} else {
+			gcStatusModel = Model.<String>of(new SimpleDateFormat(getString("gb.dateFormat")).format(repositoryModel.lastGC));
+		}
+
+		form.add(new TextOption("gcLastRun",
+				getString("gb.gcLastRun"),
+				getString("gb.gcLastRunDescription"),
+				"span6", gcStatusModel
+				).setEnabled(false));
+
 		List<Integer> gcPeriods = Arrays.asList(1, 2, 3, 4, 5, 7, 10, 14 );
 		form.add(new ChoiceOption<Integer>("gcPeriod",
 				getString("gb.gcPeriod"),
@@ -540,10 +561,35 @@ public class EditRepositoryPage extends RootSubPage {
 				"span1",
 				new PropertyModel<String>(repositoryModel, "gcThreshold")).setEnabled(gcEnabled));
 
+		Link<Void> rungc = new Link<Void>("rungc") {
+			@Override
+			public void onClick() {
+				IGitblit gitblit = app().gitblit();
+				RepositoryModel latestModel = gitblit.getRepositoryModel(repositoryModel.name);
+
+				if(latestModel.isCollectingGarbage) {
+					error(getString("gb.gcAlreadyRunning"));
+				} else {
+					gitblit.collectGarbage(latestModel.name, true, true);
+					RepositoriesPage repositoriesPage = new RepositoriesPage();
+					setResponsePage(repositoriesPage);
+					repositoriesPage.info(getString("gb.gcStarted"));
+				}
+
+				this.setEnabled(false);
+			}
+		};
+
+		if (canGC) {
+			rungc.add(new JavascriptEventConfirmation("onclick", MessageFormat.format(
+					getString("gb.rungcWarning"), repositoryModel)));
+		}
+
+		form.add(rungc.setVisible(canGC).setEnabled(!isCollectingGarbage));
+
 		//
 		// MISCELLANEOUS
 		//
-
 		form.add(new TextOption("origin",
 				getString("gb.origin"),
 				getString("gb.originDescription"),
@@ -706,7 +752,6 @@ public class EditRepositoryPage extends RootSubPage {
 				getString("gb.deleteRepository"), repositoryModel)));
 		}
 		form.add(delete.setVisible(canDelete));
-
 		add(form);
 	}
 
