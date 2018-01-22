@@ -1244,6 +1244,14 @@ public class GitblitManager implements IGitblit {
 		return repositoryManager.isIdle(repository);
 	}
 
+	public boolean collectGarbage(String repositoryname, boolean force, boolean async) {
+		return repositoryManager.collectGarbage(repositoryname, force, async);
+	}
+
+	public void collectGarbage() {
+		repositoryManager.collectGarbage();
+	}
+
 	/*
 	 * FILE STORAGE MANAGER
 	 */

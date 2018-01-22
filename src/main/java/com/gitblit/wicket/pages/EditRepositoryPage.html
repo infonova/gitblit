@@ -157,9 +157,14 @@
 
 			<h4><wicket:message key="gb.garbageCollection"></wicket:message></h4>
 			<p><wicket:message key="gb.garbageCollectionDescription"></wicket:message></p>
-		
+
+			<div wicket:id="gcLastRun"></div>
 			<div wicket:id="gcPeriod"></div>
 			<div wicket:id="gcThreshold"></div>
+
+			<h4><wicket:message key="gb.runGcHeader"></wicket:message></h4>
+			<p><wicket:message key="gb.runGcHeaderDescription"></wicket:message></p>
+			<input class="btn btn-danger" type="submit" value="rungc" wicket:message="value:gb.rungc" wicket:id="rungc" />
 		</div>
 		
 		<!-- misc -->

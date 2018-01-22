@@ -107,6 +107,7 @@ Use *SET_REPOSITORY_TEAM_PERMISSIONS* instead.
 <tr><td>LIST_SETTINGS</td><td>-</td><td><em>admin</em></td><td>1</td><td>-</td><td>ServerSettings (management keys)</td></tr>
 <tr><td>CLEAR_REPOSITORY_CACHE</td><td>-</td><td><em>-</em></td><td>4</td><td>-</td><td>-</td></tr>
 <tr><td>REINDEX_TICKETS</td><td>repository name</td><td><em>-</em></td><td>7</td><td>-</td><td>-</td></tr>
+<tr><td>COLLECT_GARBAGE</td><td>repository name, (force=true/false (optional))</td><td><em>-</em></td><td>7</td><td>-</td><td>-</td></tr>
 <tr><td colspan='6'><em>web.enableRpcAdministration=true</em></td></tr>
 <tr><td>LIST_FEDERATION_REGISTRATIONS</td><td>-</td><td><em>admin</em></td><td>1</td><td>-</td><td>List&lt;FederationModel&gt;</td></tr>
 <tr><td>LIST_FEDERATION_RESULTS</td><td>-</td><td><em>admin</em></td><td>1</td><td>-</td><td>List&lt;FederationModel&gt;</td></tr>
