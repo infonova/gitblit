@@ -160,34 +160,48 @@ public class LuceneService implements Runnable {
 	 */
 	@Override
 	public void run() {
-		if (!storedSettings.getBoolean(Keys.web.allowLuceneIndexing, true)) {
-			// Lucene indexing is disabled
-			return;
-		}
-		// reload the excluded extensions
-		String exts = storedSettings.getString(Keys.web.luceneIgnoreExtensions, luceneIgnoreExtensions);
-		excludedExtensions = new TreeSet<String>(StringUtils.getStringsFromValue(exts));
-
-		if (repositoryManager.isCollectingGarbage()) {
-			// busy collecting garbage, try again later
-			return;
-		}
-
-		for (String repositoryName: repositoryManager.getRepositoryList()) {
-			RepositoryModel model = repositoryManager.getRepositoryModel(repositoryName);
-			if (model.hasCommits && !ArrayUtils.isEmpty(model.indexedBranches)) {
-				Repository repository = repositoryManager.getRepository(model.name);
-				if (repository == null) {
-					if (repositoryManager.isCollectingGarbage(model.name)) {
-						logger.info(MessageFormat.format("Skipping Lucene index of {0}, busy garbage collecting", repositoryName));
-					}
-					continue;
-				}
-				index(model, repository);
-				repository.close();
-				System.gc();
+		long startMilis = System.currentTimeMillis();
+		try {
+			if (!storedSettings.getBoolean(Keys.web.allowLuceneIndexing, true)) {
+				// Lucene indexing is disabled
+				return;
 			}
+			// reload the excluded extensions
+			String exts = storedSettings.getString(Keys.web.luceneIgnoreExtensions, luceneIgnoreExtensions);
+			excludedExtensions = new TreeSet<String>(StringUtils.getStringsFromValue(exts));
+
+			if (repositoryManager.isCollectingGarbage()) {
+				// busy collecting garbage, try again later
+				return;
+			}
+
+			logger.info("Starting lucene indexing");
+			for (String repositoryName : repositoryManager.getRepositoryList()) {
+				Repository repository = null;
+				try {
+					RepositoryModel model = repositoryManager.getRepositoryModel(repositoryName);
+					if (model.hasCommits && !ArrayUtils.isEmpty(model.indexedBranches)) {
+						repository = repositoryManager.getRepository(model.name);
+						if (repository == null) {
+							if (repositoryManager.isCollectingGarbage(model.name)) {
+								logger.info(MessageFormat.format("Skipping Lucene index of {0}, busy collecting garbage", repositoryName));
+							}
+						} else {
+							index(model, repository);
+						}
+					}
+				} catch(Exception e) {
+					logger.error(MessageFormat.format("Error while indexing lucene for {0}", repositoryName), e);
+				} finally {
+					if(repository != null) {
+						repository.close();
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("General error while indexing lucene:", e);
 		}
+		logger.info(MessageFormat.format("Lucene indexing has finished in {0}ms", System.currentTimeMillis() - startMilis));
 	}
 
 	/**
