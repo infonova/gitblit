@@ -5,15 +5,29 @@ r31: {
     title: ${project.name} ${project.version} released
     id: ${project.version}
     date: ${project.buildDate}
-    note: ~
+    note: This is a Infonova internal release based on 1.8.0 with various fixes and improvements
     html: ~
     text: ~
     security: ~
-    fixes: ~
-    changes: ~
-    additions: ~
+    fixes:
+      - Prevent Lucene indexing scheduler thread from dying unexpectedly
+      - Continue Lucene indexing for other repositories when encountering problems with one
+      - Prevent git GC scheduler thread from dying unexpectedly
+      - Fix "size limit exceeded" LDAPSearchException
+      - Fix NPE when repository description is empty
+    changes:
+      - Allow owners to delete their repositories
+      - Disable Filestore when maxUploadSize is set to 0
+      - Bump JGit to 4.9.2
+    additions:
+      - Start git GC for a repository on "Edit -> GC" page
+      - Start git GC via RPC call ("COLLECT_GARBAGE")
+      - Add a "PROJ" permission for users and teams
+      - Allow users and teams with "PROJ" permission to edit their repositories
     dependencyChanges: ~
-    contributors: ~
+    contributors:
+      - aprattes
+      - sprietl
 }
 
 #
