@@ -1,10 +1,10 @@
 #
-# ${project.version} release
+# 1.8.0-INFONOVA-2 release
 #
 r31: {
-    title: ${project.name} ${project.version} released
-    id: ${project.version}
-    date: ${project.buildDate}
+    title: Gitblit 1.8.0-INFONOVA-2 released
+    id: 1.8.0-INFONOVA-2
+    date: 2018-02-01
     note: This is a Infonova internal release based on 1.8.0 with various fixes and improvements
     html: ~
     text: ~
@@ -1885,6 +1885,6 @@ r1: {
 	- James Moger
 }
 
-snapshot: &r31
-release: &r30
-releases: &r[1..30]
+snapshot: ~
+release: &r31
+releases: &r[1..31]
