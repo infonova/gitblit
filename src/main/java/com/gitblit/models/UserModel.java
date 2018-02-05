@@ -464,7 +464,7 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 
 		for(String key : permissions.keySet()) {
 			if(permissions.get(key) == AccessPermission.MANAGE_PROJECT
-					&& projectName.matches(key)) {
+					&& StringUtils.matchesIgnoreCase(projectName, key)) {
 				return true;
 			}
 		}

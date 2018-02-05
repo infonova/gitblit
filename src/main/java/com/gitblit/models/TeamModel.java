@@ -360,7 +360,7 @@ public class TeamModel implements Serializable, Comparable<TeamModel> {
 			}
 
 			if(permissions.get(key) == AccessPermission.MANAGE_PROJECT
-					&& projectName.matches(key)) {
+					&& StringUtils.matchesIgnoreCase(projectName, key)) {
 				return true;
 			}
 		}
