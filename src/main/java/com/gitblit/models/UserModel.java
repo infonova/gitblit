@@ -570,18 +570,11 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 	 * @return true if the user can create the repository
 	 */
 	public boolean canCreate(String repository) {
-		if (canAdmin()) {
-			// admins can create any repository
-			return true;
-		}
-		if (canCreate()) {
-			String projectPath = StringUtils.getFirstPathElement(repository);
-			if (!StringUtils.isEmpty(projectPath) && projectPath.equalsIgnoreCase(getPersonalPath())) {
-				// personal repository
-				return true;
-			}
-		}
-		return false;
+
+		ProjectModel projectModel = GitBlitWebApp.get().projects().getProjectModel(repository);
+
+		return canAdmin() || canManage(projectModel)
+				|| canCreate() && isMyPersonalRepository(repository);
 	}
 
 	/**
