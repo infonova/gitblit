@@ -449,22 +449,22 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 	}
 
 
-	public boolean canManage(String repository) {
-		return canManage(GitBlitWebApp.get().projects().getProjectModel(repository));
+	public boolean canManage(ProjectModel projectModel) {
+		String projectName = "/";
+		if(!projectModel.isRoot) {
+			projectName = projectModel.name + "/";
+		}
+
+		return canManage(projectName);
 	}
 
-	public boolean canManage(ProjectModel projectModel) {
-		if (projectModel == null) {
+	public boolean canManage(String projectName) {
+		if (StringUtils.isEmpty(projectName)) {
 			return false;
 		}
 
 		if(canAdmin()) {
 			return true;
-		}
-
-		String projectName = "/";
-		if(!projectModel.isRoot) {
-			projectName = projectModel.name + "/";
 		}
 
 		for(String key : permissions.keySet()) {
@@ -475,7 +475,7 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 		}
 
 		for(TeamModel teamModel : teams) {
-			if(teamModel.canManage(projectModel)) {
+			if(teamModel.canManage(projectName)) {
 				return true;
 			}
 		}
@@ -575,7 +575,8 @@ public class UserModel implements Principal, Serializable, Comparable<UserModel>
 	 * @return true if the user can create the repository
 	 */
 	public boolean canCreate(String repository) {
-		return canAdmin() || canManage(repository) || (canCreate() && isMyPersonalRepository(repository));
+		String projectName = StringUtils.getFirstPathElement(repository) + "/";
+		return canAdmin() || canManage(projectName) || (canCreate() && isMyPersonalRepository(repository));
 	}
 
 	/**
