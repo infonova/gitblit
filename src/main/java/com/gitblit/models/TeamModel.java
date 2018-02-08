@@ -344,21 +344,12 @@ public class TeamModel implements Serializable, Comparable<TeamModel> {
 		return name.compareTo(o.name);
 	}
 
-    public boolean canManage(ProjectModel projectModel) {
-		if (projectModel == null) {
-			return false;
-		}
-
+    public boolean canManage(String projectName) {
 		if(canAdmin) {
 			return true;
 		}
 
 		for(String key : permissions.keySet()) {
-			String projectName = "/";
-			if(!projectModel.isRoot) {
-				projectName = projectModel.name + "/";
-			}
-
 			if(permissions.get(key) == AccessPermission.MANAGE_PROJECT
 					&& StringUtils.matchesIgnoreCase(projectName, key)) {
 				return true;
