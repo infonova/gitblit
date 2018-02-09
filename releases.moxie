@@ -5,15 +5,20 @@ r32: {
     title: ${project.name} ${project.version} released
     id: ${project.version}
     date: ${project.buildDate}
-    note: ~
+    note: This is a Infonova internal release based on 1.8.0 with various fixes and improvements
     html: ~
     text: ~
     security: ~
-    fixes: ~
+      - Creating repositories on git push now checks if user has PROJ permission
+    fixes:
+      - PROJ permission not working on projects with capital letters
+      - WicketRuntimeException when creating repositories with git push
     changes: ~
     additions: ~
     dependencyChanges: ~
-    contributors: ~
+    contributors:
+      - sprietl
+      - kazesberger
 }
 
 #
@@ -219,7 +224,7 @@ r28: {
     - Paul Martin
     - razzard
     - Alexander Zabluda
-    - Marcin Cieślak
+    - Marcin Cie?lak
     - Rainer W
     - Vitaliy Filippov
     - willyann
@@ -228,10 +233,10 @@ r28: {
     - Fabrice Bacchella
     - Milos Cubrilo
     - Thomas Wolf
-    - Morten Bøgeskov
+    - Morten B?geskov
     - Steven Oliver
     - Dariusz Bywalec
-    - Jan Šmucr
+    - Jan ?mucr
 }
 
 #
@@ -330,7 +335,7 @@ r27: {
     - Paul Martin
     - razzard
     - Alexander Zabluda
-    - Marcin Cieślak
+    - Marcin Cie?lak
     - Rainer W
     - Vitaliy Filippov
     - willyann
@@ -339,10 +344,10 @@ r27: {
     - Fabrice Bacchella
     - Milos Cubrilo
     - Thomas Wolf
-    - Morten Bøgeskov
+    - Morten B?geskov
     - Steven Oliver
     - Dariusz Bywalec
-    - Jan Šmucr
+    - Jan ?mucr
 }
 
 #
@@ -366,7 +371,7 @@ r26: {
     contributors:
     - Pierre Templier
     - Barry Roberts 
-    - Jan Šmucr
+    - Jan ?mucr
 }
 
 #
@@ -580,7 +585,7 @@ r24: {
     - Jeroen Baten
     - Dongsu Kim
     - Karanbir Singh
-    - Tamás Papp
+    - Tam?s Papp
     - GianMaria Romanato
     settings:
     - { name: 'web.allowDeletingNonEmptyRepositories', defaultValue: 'true' }
@@ -907,7 +912,7 @@ r20: {
 	- Berke Viktor
 	- Vitaly Litvak
 	- Matthias Cullman
-	- Eduardo Guervós Narvaez
+	- Eduardo Guerv?s Narvaez
 	- Stardrad Yin
 	- Markus Foempe
 	- Nasrollah Kavian
@@ -920,7 +925,7 @@ r20: {
 	- Rick Sladkey
 	- Matthias Cullman
 	- Johann Fischer
-	- Tamás Papp
+	- Tam?s Papp
 	- Liyu Wang
 	- Jeroen Baten
 	- Dongsu, KIM
@@ -1011,19 +1016,19 @@ r18: {
 	- { name: 'realm.pam.backingUserService', defaultValue: 'users.conf' }
 	- { name: 'realm.pam.serviceName', defaultValue: 'system-auth' }
     contributors:
-	- Rainer Alföldi 
+	- Rainer Alf?ldi 
 	- Liyu Wang
 	- Jeroen Baten
 	- James Moger
 	- Stardrad Yin
 	- Chad Horohoe
-	- Eduardo Guervós Narvaez
+	- Eduardo Guerv?s Narvaez
 	- Dongsu, KIM
 	- Gareth Collins
 	- Rafael Cavazin
-	- Tamás Papp
+	- Tam?s Papp
 	- Florian Zschocke
-	- Amélie Benoit
+	- Am?lie Benoit
 	- Gustavo Henrique
 }
 
