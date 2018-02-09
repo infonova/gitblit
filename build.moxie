@@ -10,12 +10,12 @@ name: Gitblit
 description: pure Java Git solution
 groupId: com.gitblit
 artifactId: gitblit
-version: 1.8.0-INFONOVA-3-SNAPSHOT
+version: 1.8.0-INFONOVA-3
 inceptionYear: 2011
 
 # Current stable release
-releaseVersion: 1.8.0-INFONOVA-2
-releaseDate: 2018-02-01
+releaseVersion: 1.8.0-INFONOVA-3
+releaseDate: 2018-02-09
 
 # Project urls
 url: 'http://gitblit.com'
