@@ -1195,13 +1195,19 @@ public class PatchsetReceivePack extends GitblitReceivePack {
 		return newPatchset;
 	}
 
-	private RefUpdate updateRef(String ref, ObjectId newId, PatchsetType type) {
-		ObjectId ticketRefId = ObjectId.zeroId();
+	private ObjectId resolveObjectId(String ref) {
+		ObjectId ticketRefId = null;
 		try {
 			ticketRefId = getRepository().resolve(ref);
 		} catch (Exception e) {
 			// ignore
 		}
+
+		return ticketRefId == null ? ObjectId.zeroId() : ticketRefId;
+	}
+
+	private RefUpdate updateRef(String ref, ObjectId newId, PatchsetType type) {
+		ObjectId ticketRefId = resolveObjectId(ref);
 
 		try {
 			RefUpdate ru = getRepository().updateRef(ref,  false);
@@ -1238,10 +1244,13 @@ public class PatchsetReceivePack extends GitblitReceivePack {
 			return;
 		}
 
-		ReceiveCommand.Type type = null;
+		ObjectId oldObjectId = ru.getOldObjectId();
+
+		ReceiveCommand.Type type;
 		switch (ru.getResult()) {
 		case NEW:
 			type = Type.CREATE;
+			oldObjectId = ObjectId.zeroId();
 			break;
 		case FAST_FORWARD:
 			type = Type.UPDATE;
@@ -1254,7 +1263,7 @@ public class PatchsetReceivePack extends GitblitReceivePack {
 					ru.getResult(), ru.getName()));
 			return;
 		}
-		ReceiveCommand cmd = new ReceiveCommand(ru.getOldObjectId(), ru.getNewObjectId(), ru.getName(), type);
+		ReceiveCommand cmd = new ReceiveCommand(oldObjectId, ru.getNewObjectId(), ru.getName(), type);
 		RefLogUtils.updateRefLog(user, getRepository(), Arrays.asList(cmd));
 	}
 
