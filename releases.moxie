@@ -5,15 +5,17 @@ r33: {
     title: ${project.name} ${project.version} released
     id: ${project.version}
     date: ${project.buildDate}
-    note: ~
+    note: This is a Infonova internal release based on 1.8.0 with various fixes and improvements
     html: ~
     text: ~
     security: ~
-    fixes: ~
+    fixes:
+      - Fix NPE when creating a ticket branch
     changes: ~
     additions: ~
     dependencyChanges: ~
-    contributors: ~
+    contributors:
+      - sprietl
 }
 
 #
